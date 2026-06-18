@@ -15,7 +15,14 @@ const router = express.Router()
 router.get('/*path', function (req, res) {
   // If X-CacheTest-Error is set, simulate the site being down (regardless of URL)
   if (req.get('X-CacheTest-Error')) {
-    res.status(parseInt(req.get('X-CacheTest-Error') as string)).end()
+    const errorStatus = parseInt(req.get('X-CacheTest-Error') as string, 10)
+    if (isNaN(errorStatus) || errorStatus < 400 || errorStatus > 599) {
+      res
+        .status(400)
+        .json({ error: 'X-CacheTest-Error must be a valid HTTP error status (400-599)' })
+      return
+    }
+    res.status(errorStatus).end()
     return
   }
 

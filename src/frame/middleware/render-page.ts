@@ -132,8 +132,29 @@ export default async function renderPage(req: ExtendedRequest, res: Response) {
     }
 
     if (json) {
-      // deep reference: ?json=page.permalinks
-      return res.json(get(context, req.query.json as string))
+      // Only allow access to known safe top-level context properties
+      const ALLOWED_JSON_PREFIXES = [
+        'page',
+        'currentVersion',
+        'currentPath',
+        'currentLanguage',
+        'currentProduct',
+        'currentCategory',
+        'allVersions',
+        'breadcrumbs',
+        'releases',
+        'site.data.reusables',
+        'site.data.variables',
+        'site.data.ui',
+      ]
+      const jsonKey = json as string
+      const isAllowed = ALLOWED_JSON_PREFIXES.some(
+        (prefix) => jsonKey === prefix || jsonKey.startsWith(`${prefix}.`),
+      )
+      if (!isAllowed) {
+        return res.status(400).json({ error: 'Access to that context property is not allowed' })
+      }
+      return res.json(get(context, jsonKey))
     } else {
       // dump all the keys: ?json
       return res.json({
