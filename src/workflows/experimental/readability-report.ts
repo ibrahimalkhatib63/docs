@@ -103,6 +103,7 @@ Note: Requires a local server running on localhost:4000 (npm start)
 
   // Analyze each changed file
   const results: PageReadability[] = []
+  const failures: string[] = []
 
   for (const filePath of changedFiles) {
     try {
@@ -112,8 +113,14 @@ Note: Requires a local server running on localhost:4000 (npm start)
         console.log(`✓ Analyzed: ${result.path}`)
       }
     } catch (error) {
-      console.error(`✗ Failed to analyze ${filePath}:`, (error as Error).message)
+      const message = (error as Error).message
+      console.error(`✗ Failed to analyze ${filePath}:`, message)
+      failures.push(`${filePath}: ${message}`)
     }
+  }
+
+  if (failures.length > 0) {
+    console.warn(`\n⚠ ${failures.length} file(s) failed analysis:\n${failures.join('\n')}`)
   }
 
   // Generate and output report

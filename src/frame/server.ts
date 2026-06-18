@@ -7,4 +7,5 @@ try {
   await main()
 } catch (error) {
   logger.error('Uncaught top-level error', { error })
+  process.exit(1)
 }

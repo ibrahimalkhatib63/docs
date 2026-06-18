@@ -189,7 +189,9 @@ function getReferrer(documentReferrer: string) {
     if (!referrerUrl.pathname || referrerUrl.pathname === '/') {
       return location.origin + previousPath
     }
-  } catch {}
+  } catch {
+    // new URL() throws if documentReferrer is not a valid URL; fall through to default
+  }
   return documentReferrer
 }
 

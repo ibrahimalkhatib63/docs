@@ -194,7 +194,7 @@ class Page {
     } catch (err: any) {
       if (err.code === 'ENOENT') return false
       console.error(err)
-      return false
+      throw err
     }
   }
 

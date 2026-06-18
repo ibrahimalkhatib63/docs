@@ -34,8 +34,8 @@ export default async function journeyTrack(
 
     req.context.currentJourneyTrack = journeyContext
   } catch (error) {
-    console.warn('Failed to resolve journey context:', error)
-    req.context.currentJourneyTrack = null
+    console.error('Failed to resolve journey context:', error)
+    return next(error)
   }
 
   return next()

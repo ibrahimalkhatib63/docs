@@ -112,6 +112,8 @@ async function main() {
       } catch (err) {
         console.error('scraping error')
         console.error(err)
+        server.close()
+        throw err
       }
 
       fs.renameSync(

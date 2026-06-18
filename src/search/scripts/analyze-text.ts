@@ -98,8 +98,7 @@ async function main(opts: Options, textArgs: string[]): Promise<void> {
     const parsed = new URL(node)
     if (!parsed.hostname) throw new Error('No valid hostname')
   } catch (err) {
-    console.error(chalk.bold('URL for Elasticsearch not a valid URL'), err)
-    return
+    throw new Error(`URL for Elasticsearch not a valid URL: ${node}`, { cause: err })
   }
 
   const { verbose, language, notLanguage } = opts

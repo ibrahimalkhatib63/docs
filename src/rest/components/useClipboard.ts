@@ -34,6 +34,7 @@ export default function useCopyClipboard(
         await navigator.clipboard.writeText(text)
         setIsCopied(true)
       } catch {
+        // Clipboard API can fail in insecure contexts or when permissions are denied
         setIsCopied(false)
       }
     },

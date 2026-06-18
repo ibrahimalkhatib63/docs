@@ -270,6 +270,7 @@ async function expandReferences(options: ExpandOptions): Promise<void> {
       }
     } catch (error: any) {
       console.error(chalk.red(`Error processing ${filePath}: ${error.message}`))
+      throw error
     }
   }
 }
@@ -353,6 +354,7 @@ async function restoreReferences(options: ExpandOptions): Promise<void> {
       }
     } catch (error: any) {
       console.error(chalk.red(`Error restoring ${filePath}: ${error.message}`))
+      throw error
     }
   }
 }
@@ -505,8 +507,8 @@ function loadDataValue(type: 'reusable' | 'variable', dataPath: string): string 
 
       return typeof current === 'string' ? current.trim() : String(current).trim()
     }
-  } catch {
-    // Silently return null for any errors
+  } catch (error) {
+    console.warn(`Error resolving data for path:`, error instanceof Error ? error.message : error)
   }
   return null
 }
