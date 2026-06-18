@@ -12,6 +12,8 @@ import github from '@actions/github'
 import core from '@actions/core'
 import { program } from 'commander'
 
+import { getDeletedFilesComment } from '@/workflows/lib/deleted-files-pr-comment'
+
 const { GITHUB_TOKEN, GITHUB_REPOSITORY } = process.env
 
 if (!GITHUB_TOKEN) {
@@ -40,57 +42,15 @@ if (GITHUB_REPOSITORY) {
 }
 
 async function main(owner: string, repo: string, baseSHA: string, headSHA: string) {
-  if (!GITHUB_TOKEN) {
-    throw new Error(`GITHUB_TOKEN environment variable not set`)
-  }
-  const octokit = github.getOctokit(GITHUB_TOKEN)
-  // get the list of file changes from the PR
-  const response = await octokit.rest.repos.compareCommitsWithBasehead({
+  return getDeletedFilesComment({
     owner,
     repo,
-    basehead: `${baseSHA}...${headSHA}`,
+    baseSHA,
+    headSHA,
+    pathPrefix: 'data/features',
+    resourceName: 'features',
+    cleanupWorkflowName: 'Delete orphaned features',
   })
-
-  const { files } = response.data
-
-  if (!files) return ''
-
-  const oldFilenames = []
-  for (const file of files) {
-    const { filename, status } = file
-    if (!filename.startsWith('data/features')) continue
-
-    console.warn(`Feature involved in this PR: ${filename}; Status: ${status}`)
-    if (status === 'removed') {
-      // Bad
-      oldFilenames.push(filename)
-    } else if (status === 'renamed') {
-      // Also bad
-      const previousFilename = file.previous_filename
-      oldFilenames.push(previousFilename)
-    } else {
-      console.warn(`${filename} was not removed or renamed. Skipping.`)
-    }
-  }
-
-  if (!oldFilenames.length) {
-    console.warn("No old file names in this PR. And that's perfectly cool.")
-    return ''
-  }
-
-  let markdown = '**Please restore deleted features**\n\n'
-  markdown +=
-    "Even if you don't reference these features anymore, as of this branch, please do not delete them.\n"
-  markdown += 'They might still be referenced in translated content.\n'
-  markdown += 'The weekly "Delete orphaned features" workflow will clean those up.\n\n'
-  markdown += '**To *undo* these removals run this command:**\n\n'
-  markdown += `
-\`\`\`sh
-git checkout origin/main -- ${oldFilenames.join(' ')}
-\`\`\`
-`
-
-  return markdown
 }
 
 export default main

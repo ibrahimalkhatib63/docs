@@ -1,6 +1,8 @@
 import github from '@actions/github'
 import core from '@actions/core'
 
+import { getDeletedFilesComment } from '@/workflows/lib/deleted-files-pr-comment'
+
 const { GITHUB_TOKEN } = process.env
 const context = github.context
 
@@ -26,51 +28,15 @@ type MainArgs = {
   headSHA: string
 }
 async function main({ owner, repo, baseSHA, headSHA }: MainArgs) {
-  const octokit = github.getOctokit(GITHUB_TOKEN as string)
-  // get the list of file changes from the PR
-  const response = await octokit.rest.repos.compareCommitsWithBasehead({
+  return getDeletedFilesComment({
     owner,
     repo,
-    basehead: `${baseSHA}...${headSHA}`,
+    baseSHA,
+    headSHA,
+    pathPrefix: 'assets',
+    resourceName: 'assets',
+    cleanupWorkflowName: 'Delete orphaned assets',
   })
-
-  const { files } = response.data
-
-  if (!files) {
-    throw new Error('No files found in the PR')
-  }
-
-  const oldFilenames = []
-  for (const file of files) {
-    const { filename, status } = file
-    if (!filename.startsWith('assets')) continue
-    if (status === 'removed') {
-      // Bad
-      oldFilenames.push(filename)
-    } else if (status === 'renamed') {
-      // Also bad
-      const previousFilename = file.previous_filename
-      oldFilenames.push(previousFilename)
-    }
-  }
-
-  if (!oldFilenames.length) {
-    return ''
-  }
-
-  let markdown = '**Please restore deleted assets**\n\n'
-  markdown +=
-    "Even if you don't reference these assets anymore, as of this branch, please do not delete them.\n"
-  markdown += 'They might still be referenced in translated content.\n'
-  markdown += 'The weekly "Delete orphaned assets" workflow will clean those up.\n\n'
-  markdown += '**To *undo* these removals run this command:**\n\n'
-  markdown += `
-\`\`\`sh
-git checkout origin/main -- ${oldFilenames.join(' ')}
-\`\`\`
-`
-
-  return markdown
 }
 
 export default main

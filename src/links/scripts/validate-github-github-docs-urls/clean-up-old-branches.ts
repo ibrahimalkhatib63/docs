@@ -1,5 +1,4 @@
-import { Octokit } from '@octokit/rest'
-import { retry } from '@octokit/plugin-retry'
+import { retryingGithub } from '@/workflows/github'
 
 const DEFAULT_MIN_DAYS = 30
 
@@ -15,21 +14,18 @@ export async function cleanUpOldBranches(options: Options) {
   if (!process.env.GITHUB_TOKEN) {
     throw new Error('You must set the GITHUB_TOKEN environment variable.')
   }
-  const octokit = retryingOctokit(process.env.GITHUB_TOKEN)
+  const octokit = retryingGithub(process.env.GITHUB_TOKEN)
 
   const [owner, repo] = options.repository.split('/')
-  const { data: refs } = await octokit.request(
-    'GET /repos/{owner}/{repo}/git/matching-refs/{ref}',
-    {
-      owner,
-      repo,
-      ref: `heads/${options.prefix}`,
-    },
-  )
+  const { data: refs } = await octokit.rest.git.listMatchingRefs({
+    owner,
+    repo,
+    ref: `heads/${options.prefix}`,
+  })
 
   for (const ref of refs) {
     const branchName = ref.ref.replace('refs/heads/', '')
-    const { data: branch } = await octokit.request('GET /repos/{owner}/{repo}/branches/{branch}', {
+    const { data: branch } = await octokit.rest.repos.getBranch({
       owner,
       repo,
       branch: branchName,
@@ -43,7 +39,7 @@ export async function cleanUpOldBranches(options: Options) {
     )
     if (ageDays > minDays) {
       console.log(`Deleting branch ${name} !!`)
-      await octokit.request('DELETE /repos/{owner}/{repo}/git/refs/{ref}', {
+      await octokit.rest.git.deleteRef({
         owner,
         repo,
         ref: `heads/${name}`,
@@ -52,11 +48,4 @@ export async function cleanUpOldBranches(options: Options) {
       console.log(`Branch ${name} is not old enough (min days: ${minDays})`)
     }
   }
-}
-
-function retryingOctokit(token: string) {
-  const RetryingOctokit = Octokit.plugin(retry)
-  return new RetryingOctokit({
-    auth: `token ${token}`,
-  })
 }

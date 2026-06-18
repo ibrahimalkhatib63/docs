@@ -48,13 +48,7 @@ export function formatSecondsToHHMMSS(seconds: number): string {
   return new Date(seconds * 1000).toISOString().substr(11, 8)
 }
 
-export function readableTimeMinAndSec(ms: number): string {
-  if (ms < 1000) {
-    return `${ms.toFixed(1)}ms`
-  }
-  const seconds = ms / 1000
-  if (seconds > 60) {
-    return `${Math.round(seconds / 60)}m${Math.round(seconds % 60)}s`
-  }
-  return `${seconds.toFixed(1)}s`
-}
+/**
+ * @deprecated Use `formatTime` instead — identical behavior.
+ */
+export const readableTimeMinAndSec = formatTime
