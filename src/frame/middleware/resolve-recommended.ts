@@ -162,6 +162,7 @@ async function resolveRecommended(
     }
   } catch (error) {
     logger.error('Error in resolveRecommended middleware:', { error })
+    return next(error)
   }
 
   next()

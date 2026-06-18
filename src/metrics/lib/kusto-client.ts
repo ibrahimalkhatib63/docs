@@ -27,6 +27,7 @@ export function getKustoClient(): KustoClient | undefined {
   } catch (error) {
     console.error('Error connecting to Kusto')
     console.error(error)
+    throw error
   }
 
   return client

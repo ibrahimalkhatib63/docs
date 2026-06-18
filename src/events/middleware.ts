@@ -100,6 +100,12 @@ router.post(
         })
       } catch (eventError) {
         console.error('Error validating event:', eventError)
+        validationErrors.push({
+          schema: hydroNames.validation,
+          value: {
+            message: `Event processing error: ${eventError instanceof Error ? eventError.message : String(eventError)}`,
+          },
+        })
       }
     }
     if (validEvents.length > 0) {

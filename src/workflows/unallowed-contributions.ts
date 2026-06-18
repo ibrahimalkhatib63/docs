@@ -62,7 +62,8 @@ async function main() {
 
     workflowFailMessage = `${workflowFailMessage} Please see ${createdComment.data.html_url} for details.`
   } catch (err) {
-    console.log('Error creating comment.', err)
+    console.error('Error creating comment on PR:', err)
+    workflowFailMessage = `${workflowFailMessage} (Also failed to post a comment on the PR.)`
   }
 
   core.setFailed(workflowFailMessage)
