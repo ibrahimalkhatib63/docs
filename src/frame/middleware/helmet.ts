@@ -91,9 +91,16 @@ const developerDeprecatedHelmet = helmet(DEVELOPER_DEPRECATED_OPTIONS)
 const appRouterHelmet = helmet(APP_ROUTER_OPTIONS)
 
 export default function helmetMiddleware(req: Request, res: Response, next: NextFunction) {
-  // Enable CORS
+  // Enable CORS only for public API and asset paths
   if (['GET', 'OPTIONS'].includes(req.method)) {
-    res.set('access-control-allow-origin', '*')
+    if (
+      req.path.startsWith('/api/') ||
+      req.path.startsWith('/assets/') ||
+      req.path === '/llms.txt' ||
+      req.path === '/categories.json'
+    ) {
+      res.set('access-control-allow-origin', '*')
+    }
   }
 
   // Check if this is an explicit App Router route
