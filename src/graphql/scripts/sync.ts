@@ -6,6 +6,7 @@ import yaml from 'js-yaml'
 import { execSync } from 'child_process'
 import { getContents, hasMatchingRef } from '@/workflows/git-utils'
 import { allVersions } from '@/versions/lib/all-versions'
+import { formatTime } from '@/search/lib/helpers/time'
 import processPreviews from './utils/process-previews'
 import processUpcomingChanges from './utils/process-upcoming-changes'
 import processSchemas from './utils/process-schemas'
@@ -251,15 +252,4 @@ async function updateStaticFile(json: unknown, filepath: string) {
   console.log(`Updating static file ${filepath}`)
   const jsonString = JSON.stringify(json, null, 2)
   return updateFile(filepath, jsonString)
-}
-
-function formatTime(ms: number) {
-  if (ms < 1000) {
-    return `${ms.toFixed(0)}ms`
-  }
-  const seconds = ms / 1000
-  if (seconds > 60) {
-    return `${Math.round(seconds / 60)}m${Math.round(seconds % 60)}s`
-  }
-  return `${seconds.toFixed(1)}s`
 }

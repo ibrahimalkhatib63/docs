@@ -23,8 +23,8 @@ export default function github() {
   })
 }
 
-export function retryingGithub() {
+export function retryingGithub(token?: string) {
   return new RetryingOctokit({
-    auth: `token ${apiToken}`,
+    auth: `token ${token || apiToken}`,
   })
 }
